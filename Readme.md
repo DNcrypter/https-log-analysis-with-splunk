@@ -1,24 +1,23 @@
-# Http log analysis
-## Apache HTTP Log Analysis using Splunk SIEM
-
-In this project, we will upload sample HTTP log files to Splunk SIEM and perform various analyses to gain insights into web server activity within the network.
+# Analyzing FTP Log Files Using Splunk SIEM
+In this project, we will upload sample FTP log files to Splunk SIEM and perform various analyses to gain insights into FTP activity within the network.
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
         [![LinkedIn](https://img.shields.io/badge/LinkedIn-Profile-blue)](https://www.linkedin.com/in/nikhil--chaudhari/)
         [![Medium](https://img.shields.io/badge/Medium-Writeups-black)](https://medium.com/@nikhil-c)
 
 ## 🍁Introduction
-HTTP (Hypertext Transfer Protocol) log files contain valuable information about web server activity, including requests, responses, user agents, and more. Analyzing HTTP logs using Splunk SIEM enables security professionals to monitor web traffic, detect anomalies, and identify potential security threats.
+FTP (File Transfer Protocol) log files contain valuable information about file transfers within a network. Analyzing FTP logs using Splunk SIEM enables security professionals to monitor file transfer activities, detect anomalies, and identify potential security threats.
 
-## 🍁Prerequisites
+## 🔗Prerequisites
+Before starting the project, ensure the following:
 - Splunk instance is installed and configured.
-- HTTP log data sources are configured to forward logs to Splunk.
+- FTP log data sources are configured to forward logs to Splunk.
 
-## 🍁Upload Sample HTTP Log Files to Splunk
+## ⚙️Upload Sample FTP Log File to Splunk SIEM
 
-### 1. Prepare Sample HTTP Log Files
-- Obtain sample [HTTP log files]() in a suitable format (e.g., text files).
-- Ensure the log files contain relevant HTTP events, including timestamps, request methods, URLs, response codes, user agents, etc.
+### 1. Prepare Sample FTP Log File
+- Obtain sample [FTP log files]() in a suitable format (e.g., text files).
+- Ensure the log files contain relevant FTP events, including timestamps, source IP, username, commands, filenames, etc.
 - Save the sample log files in a directory accessible by the Splunk instance.
 
 ### 2. Upload Log Files to Splunk
@@ -27,98 +26,75 @@ HTTP (Hypertext Transfer Protocol) log files contain valuable information about 
 - Select **Upload** as the data input method.
 
 ### 3. Choose File
-- Click on **Select File** and choose the sample HTTP log file you prepared earlier.
+- Click on **Select File** and choose the sample FTP log file you prepared earlier.
 
 ### 4. Set Source Type
 - In the **Set Source Type** section, specify the source type for the uploaded log file.
-- Choose the appropriate source type for HTTP logs (e.g., `access_combined` or a custom source type if applicable).
+- Choose the appropriate source type for FTP logs (e.g., `ftp` or a custom source type if applicable).
 
 ### 5. Review Settings
 - Review other settings such as index, host, and sourcetype.
-- Ensure the settings are configured correctly to match the sample HTTP log file.
+- Ensure the settings are configured correctly to match the sample FTP log file.
 
 ### 6. Click Upload
 - Once all settings are configured, click on the **Review** button.
 - Review the settings one final time to ensure accuracy.
-- Click **Submit** to upload the sample HTTP log file to Splunk.
+- Click **Submit** to upload the sample FTP log file to Splunk.
 
 ### 7. Verify Upload
 - After uploading, navigate to the search bar in the Splunk interface.
-- Run a search query to verify that the uploaded HTTP events are visible.
+- Run a search query to verify that the uploaded FTP events are visible.
 
 
-## 🍁Analyse log file in splunk
+## 🔗Analyze FTP Log Files in Splunk SIEM
 
-### 1. Search for HTTP Events
+### 1. Search for FTP Events   
 - Open Splunk interface and navigate to the search bar.
-- Enter the following search query to retrieve HTTP events:
+- Enter the following search query to retrieve FTP events
 ```
-index=<your_http_index> sourcetype=<your_http_sourcetype>
+index=<your_ftp_index> sourcetype=<your_ftp_sourcetype>
 ```
 
-### 2. Extract Relevant Fields
-- Identify key fields in HTTP logs such as timestamps, request methods, URLs, response codes, user agents, etc.
+### 2.  Extract Relevant Fields
+- Identify key fields in FTP logs such as timestamps, source IP, username, commands, filenames, etc.
 - Use Splunk's field extraction capabilities or regular expressions to extract these fields for better analysis.
 - Example extraction command:
 ```
-| rex field=_raw "<regex_pattern>"
-
+| rex field=_raw "^(?<timestamp>\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}).*?(?<source_ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}).*?(?<username>\w+).*?(?<command>[A-Z]+).*?(?<file_path>\/[\w\/.-]+)
+"
 ```
 
-### 3. Analyze Web Traffic Patterns
-- Determine the distribution of request methods (GET, POST, etc.) to understand web traffic patterns.
-```
-index=<your_http_index> sourcetype=<your_http_sourcetype>
-| stats count by method
-```
-- Identify top URLs or endpoints accessed by users.
-```
-index=<your_http_index> sourcetype=<your_http_sourcetype>
-| top limit=10 uri
-```
-- Analyze response codes to identify errors or successful requests.
-```
-index=<your_http_index> sourcetype=<your_http_sourcetype>
-| stats count by status
-```
+Explanation:
+- `^`: Start of the line.
+- `(?<timestamp>\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})`: Matches and captures the timestamp in the format "YYYY-MM-DD HH:MM:SS".
+- `.*?`: Matches any character (except for line terminators) as few times as possible.
+- `(?<source_ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})`: Matches and captures the source IP address.
+- `(?<username>\w+)`: Matches and captures the username (assuming it consists of alphanumeric characters).
+- `(?<command>[A-Z]+)`: Matches and captures the FTP command (assuming it consists of uppercase letters).
+- `(?<file_path>\/[\w\/.-]+)`: Matches and captures the file path (assuming it starts with "/" and can contain alphanumeric characters, "/", ".", and "-").
+
+
+### 3. Analyze File Transfer Activity
+- Determine the frequency and volume of file transfers.
+- Identify top users or IP addresses involved in file transfers.
+- Analyze the types of files being transferred (e.g., documents, executables, archives).
+- Use stats command to calculate statistics such as count, sum, avg, etc.
 
 ### 4. Detect Anomalies
 - Look for unusual patterns in file transfer activity.
-```
-index=<your_http_index> sourcetype=<your_http_sourcetype>
-| timechart span=1h count by _time
-```
-- Analyze high volumes of error responses:
-```
-index=<your_http_index> sourcetype=<your_http_sourcetype>
-| stats count by status
-| where status >= 400
-```
+- Analyze sudden spikes or drops in file transfer volume.
 - Investigate file transfers to or from suspicious IP addresses.
-```
-index=<your_http_index> sourcetype=<your_http_sourcetype>
-| search src_ip="suspicious_ip"
-```
+- Use statistical analysis or machine learning models to detect anomalies.
 
 
 ### 5. Monitor User Behavior
-- Identify users with multiple failed login attempts or unauthorized access attempts:
-```
-index=<your_http_index> sourcetype=<your_http_sourcetype>
-| search action="login" status="failed"
-| stats count by user
-```
-- Analyze user session durations and access patterns:
-```
-index=<your_http_index> sourcetype=<your_http_sourcetype>
-| stats range(_time) as session_duration by session_id
-| stats avg(session_duration) as avg_session_duration by user
-```
+- Monitor user behavior during file transfers.
+- Identify users with multiple failed login attempts or unauthorized access attempts.
+- Analyze user activity patterns and deviations from normal behavior.
 
-## 🍁Conclusion
-By analyzing HTTP log files using Splunk SIEM, security researcher can gain insights into web server activities. 
+## 🚩Conclusion
+Analyzing FTP log files using Splunk SIEM provides valuable insights into file transfer activities within a network. By monitoring FTP events, detecting anomalies, and correlating with other logs, organizations can enhance their security posture and protect against various cyber threats.
 
-Now we are ready with http log analysis in splunk. Star this repo and you can also push some more content here. if you are interested in such content please check my medium profile where i uploads blogs.
 
 
 
